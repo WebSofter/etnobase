@@ -1,0 +1,91 @@
+1. Команды Docker
+1.1. Принудительная остановка и удаление всех контейнеров и образов docker: 
+    docker stop $(docker ps -a -q) && docker rm $(docker ps -a -q) && docker rmi -f $(docker images -a -q) 
+1.2. Построение образов и поднятие контейнеров: 
+    docker-compose build --no-cache && docker-compose up -d
+1.3. Вывод списка, удаление данных определенного контейнера:
+    docker volume ls
+    docker volume rm <volume>
+1.4. Запуск отдельного контейнера
+    docker container start backend_elasticsearch_1
+2. Команды Postgress
+2.1. Вход в контейнер Postgres в интерактивном режиме:
+    docker exec -it wsofter_psql bash -l
+    psql -U yii2advanced
+2.2. Удаление базы данных из Postgres
+    dbdrop yii2advanced или DROP DATABASE yii2advanced
+2.3. Вход в контейнер и в консоль SQL Postgres в интерактивном режиме:
+    docker exec -it wsofter_psql psql -U yii2advanced -W yii2advanced
+2.4. Импорт базы данных в контейнер:
+    docker exec -i wsofter_psql psql -U yii2advanced < /var/www/wsofter/yii2advanced_1.pgsql
+    docker exec -i wsofter_psql psql -U yii2advanced < /var/www/wsofter/yii2advanced.pgsql
+
+    docker exec -i wsofter_mysql mysqldump -uwuser --password=secret wordpress> wordpress_19.02.2022.sql
+    docker exec -i wsofter_mysql mysql -uwuser -psecret --force wordpress < wordpress_19.02.2022.sql
+
+2.3. Экспорт дампа БД из контейнера:
+    docker exec -i wsofter_psql pg_dump --username yii2advanced yii2advanced > /var/www/wsofter/yii2advanced.pgsql
+2.6. Провекра имортированной баз через Adminer (Подробно тут на видео показываю https://youtu.be/aLsre5H-JcI)
+    Вход: http://<server_rl>:8080/
+    Движок: Postgres
+    Сервер: <server_rl>:25432
+    Юзер: yii2advanced
+    БД: yii2advanced
+    Пароль: secret
+2.7. Проверка хоста elasticsearch
+    curl -XGET localhost:9200
+2.8. Инструкции SQL
+psql -U yii2advanced_2
+# CREATE DATABASE yii2advanced_2;
+# CREATE USER yii2advanced_2 WITH ENCRYPTED PASSWORD 'secret';
+# GRANT ALL PRIVILEGES ON DATABASE yii2advanced_2 TO yii2advanced_2;
+
+psql -U yii2advanced
+# DROP DATABASE yii2advanced WITH (FORCE);
+# CREATE DATABASE yii2advanced;
+# GRANT ALL PRIVILEGES ON DATABASE yii2advanced TO yii2advanced;
+
+!!!ВАЖНО
+1. Не забываем прописать новы DSN для Postgress в файлах, закомментировав соединение MYSQL:
+-backend/common/config/main-local.php
+-backend/environments/dev/common/config/main-local.php
+-backend/environments/prod/common/config/main-local.php
+-backend/backend/views/media/browser.php
+'db' => [
+    ...
+    'dsn' => 'pgsql:host=wsofter.wsofter.ru;port=25432;dbname=yii2advanced',
+    'username' => 'yii2advanced',
+    'password' => 'secret',
+    'charset' => 'utf8',
+    'schemaMap' => [
+        'pgsql'=> [
+            'class'=>'yii\db\pgsql\Schema',
+            'defaultSchema' => 'yii2advanced' //specify your schema here
+        ]
+    ], // PostgreSQL
+    ...
+]
+2. Если систем не работает связка Postgress и PHP, то вероятно потребуется устанвоитьв  систему:
+sudo apt-get install libpq-dev
+
+3. Настройка Elasticsearch
+
+Может не запуститься. Чтобы запустился, необходимо
+3.1. Прописать права на локальную папку монтирования
+sudo chown -R 1000:1000 ./images/elasticsearch
+3.2. Запустить в shell контейнера команду
+sysctl -w vm.max_map_count=262144
+
+4. Папка backend/storage должен быть записываемым
+
+5. Файл NGINX для конфигурации внешнего сервера прокси
+server {
+    server_name test.wsofter.ru www.test.wsofter.ru;
+    location / {
+        proxy_pass http://localhost:280;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
