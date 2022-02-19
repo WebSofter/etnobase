@@ -39,6 +39,7 @@ services:
   nginx:
     image: nginx:latest
     container_name: etnobase_nginx
+    restart: always
     volumes:
       - ./nginx:/etc/nginx/conf.d
       - ./wordpress:/var/www/html
