@@ -10,21 +10,21 @@
     docker container start backend_elasticsearch_1
 2. Команды Postgress
 2.1. Вход в контейнер Postgres в интерактивном режиме:
-    docker exec -it wsofter_psql bash -l
+    docker exec -it etnobase_psql bash -l
     psql -U yii2advanced
 2.2. Удаление базы данных из Postgres
     dbdrop yii2advanced или DROP DATABASE yii2advanced
 2.3. Вход в контейнер и в консоль SQL Postgres в интерактивном режиме:
-    docker exec -it wsofter_psql psql -U yii2advanced -W yii2advanced
+    docker exec -it etnobase_psql psql -U yii2advanced -W yii2advanced
 2.4. Импорт базы данных в контейнер:
-    docker exec -i wsofter_psql psql -U yii2advanced < /var/www/wsofter/yii2advanced_1.pgsql
-    docker exec -i wsofter_psql psql -U yii2advanced < /var/www/wsofter/yii2advanced.pgsql
+    docker exec -i etnobase_psql psql -U yii2advanced < /var/www/etnobase/yii2advanced_1.pgsql
+    docker exec -i etnobase_psql psql -U yii2advanced < /var/www/etnobase/yii2advanced.pgsql
 
-    docker exec -i wsofter_mysql mysqldump -uwuser --password=secret wordpress> wordpress_19.02.2022.sql
-    docker exec -i wsofter_mysql mysql -uwuser -psecret --force wordpress < wordpress_19.02.2022.sql
+    docker exec -i etnobase_mysql mysqldump -uwuser --password=secret wordpress> wordpress_19.02.2022.sql
+    docker exec -i etnobase_mysql mysql -uwuser -psecret --force wordpress < wordpress_19.02.2022.sql
 
 2.3. Экспорт дампа БД из контейнера:
-    docker exec -i wsofter_psql pg_dump --username yii2advanced yii2advanced > /var/www/wsofter/yii2advanced.pgsql
+    docker exec -i etnobase_psql pg_dump --username yii2advanced yii2advanced > /var/www/etnobase/yii2advanced.pgsql
 2.6. Провекра имортированной баз через Adminer (Подробно тут на видео показываю https://youtu.be/aLsre5H-JcI)
     Вход: http://<server_rl>:8080/
     Движок: Postgres
@@ -53,7 +53,7 @@ psql -U yii2advanced
 -backend/backend/views/media/browser.php
 'db' => [
     ...
-    'dsn' => 'pgsql:host=wsofter.wsofter.ru;port=25432;dbname=yii2advanced',
+    'dsn' => 'pgsql:host=etnobase.etnobase.ru;port=25432;dbname=yii2advanced',
     'username' => 'yii2advanced',
     'password' => 'secret',
     'charset' => 'utf8',
@@ -80,7 +80,7 @@ sysctl -w vm.max_map_count=262144
 
 5. Файл NGINX для конфигурации внешнего сервера прокси
 server {
-    server_name test.wsofter.ru www.test.wsofter.ru;
+    server_name test.etnobase.ru www.test.etnobase.ru;
     location / {
         proxy_pass http://localhost:280;
         proxy_set_header Host $host;
